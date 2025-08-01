@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delhi High Court - Case Data Fetcher</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            background: #fff;
+            color: #000;
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1rem;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid #e5e5e5;
+            padding-bottom: 1.5rem;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            font-weight: 300;
+            letter-spacing: -1px;
+            margin-bottom: 0.25rem;
+            color: #000;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 0.9rem;
+            font-weight: 300;
+        }
+
+        .form-card {
+            background: transparent;
+            border: 1px solid #e5e5e5;
+            border-radius: 0;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (min-width: 768px) {
+            .form-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-size: 0.9rem;
+            font-weight: 400;
+            color: #333;
+            margin-bottom: 0.75rem;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .form-input,
+        .form-select {
+            background: #fff;
+            border: 1px solid #d1d5db;
+            border-radius: 0;
+            padding: 1rem;
+            color: #000;
+            font-size: 1rem;
+            transition: border-color 0.15s ease;
+        }
+
+        .form-input:focus,
+        .form-select:focus {
+            outline: none;
+            border-color: #000;
+        }
+
+        .form-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23000' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 1rem center;
+            background-repeat: no-repeat;
+            background-size: 1.25em 1.25em;
+            padding-right: 3rem;
+        }
+
+        .form-select option {
+            background: #fff;
+            color: #000;
+        }
+
+        .submit-container {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            background: #000;
+            color: #fff;
+            border: 1px solid #000;
+            padding: 1rem 3rem;
+            border-radius: 0;
+            font-size: 1rem;
+            font-weight: 400;
+            cursor: pointer;
+            transition: all 0.15s ease;
+            text-transform: none;
+            letter-spacing: 0;
+        }
+
+        .btn:hover {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn:active {
+            transform: none;
+        }
+
+        .results-card {
+            background: transparent;
+            border: 1px solid #e5e5e5;
+            border-radius: 0;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+
+        .results-header {
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .results-title {
+            font-size: 1.25rem;
+            font-weight: 400;
+            color: #000;
+            margin-bottom: 0.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+        }
+
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        .table th,
+        .table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .table th {
+            background: #f9f9f9;
+            font-weight: 500;
+            color: #000;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.9rem;
+        }
+
+        .table tr:hover {
+            background: #fafafa;
+        }
+
+        .pdf-link {
+            display: inline-block;
+            background: #000;
+            color: #fff;
+            padding: 0.5rem 1rem;
+            border-radius: 0;
+            text-decoration: none;
+            font-size: 0.8rem;
+            margin-top: 0.5rem;
+            transition: all 0.15s ease;
+        }
+
+        .pdf-link:hover {
+            background: #333;
+            color: #fff;
+        }
+
+        .error {
+            background: #f9f9f9;
+            border: 1px solid #e5e5e5;
+            color: #000;
+            padding: 2rem;
+            border-radius: 0;
+            font-size: 1rem;
+        }
+
+        @media (max-width: 767px) {
+            .container {
+                padding: 1.5rem 1rem;
+            }
+
+            .form-card,
+            .results-card {
+                padding: 1.5rem;
+            }
+
+            .header {
+                margin-bottom: 1.5rem;
+            }
+
+            .header h1 {
+                font-size: 1.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Delhi High Court</h1>
+            <p>Case Data Fetcher</p>
+        </div>
+
+        <div class="form-card">
+            <form method="POST" class="form-grid">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label for="case_type" class="form-label">Case Type</label>
+                    <select name="case_type" id="case_type" class="form-select" required>
+                        <option value="">Select Case Type</option>
+                        <option value="AAP">ARB.A.</option>
+                        <option value="ARBACOMM">ARB. A. (COMM.)</option>
+                        <option value="AA">ARB.P.</option>
+                        <option value="BA">BAIL APPLN.</option>
+                        <option value="CAA">CA</option>
+                        <option value="CACR">CA (COMM.IPD-CR)</option>
+                        <option value="CAG">C.A.(COMM.IPD-GI)</option>
+                        <option value="CAP">C.A.(COMM.IPD-PAT)</option>
+                        <option value="CAPP">C.A.(COMM.IPD-PV)</option>
+                        <option value="CAT">C.A.(COMM.IPD-TM)</option>
+                        <option value="CAVC">CAVEAT(CO.)</option>
+                        <option value="CC">CC</option>
+                        <option value="CCCOMM">CC(COMM)</option>
+                        <option value="CCPCO">CCP(CO.)</option>
+                        <option value="CCPO">CCP(O)</option>
+                        <option value="CCPRF">CCP(REF)</option>
+                        <option value="CEAC">CEAC</option>
+                        <option value="CEAR">CEAR</option>
+                        <option value="CHATAC">CHAT.A.C.</option>
+                        <option value="CHATRF">CHAT.A.REF</option>
+                        <option value="CMA">CM APPL.</option>
+                        <option value="CMI">CMI</option>
+                        <option value="CMM">CM(M)</option>
+                        <option value="CMMI">CM(M)-IPD</option>
+                        <option value="CO">C.O.</option>
+                        <option value="COA">CO.APP.</option>
+                        <option value="CA">CO.APPL.</option>
+                        <option value="CAC">CO.APPL.(C)</option>
+                        <option value="CAM">CO.APPL.(M)</option>
+                        <option value="COASB">CO.A(SB)</option>
+                        <option value="COC">C.O.(COMM.IPD-CR)</option>
+                        <option value="COG">C.O.(COMM.IPD-GI)</option>
+                        <option value="COP">C.O.(COMM.IPD-PAT)</option>
+                        <option value="COT">C.O. (COMM.IPD-TM)</option>
+                        <option value="COEX">CO.EX.</option>
+                        <option value="CCA">CONT.APP.(C)</option>
+                        <option value="CCP">CONT.CAS(C)</option>
+                        <option value="CRLCC">CONT.CAS.(CRL)</option>
+                        <option value="CP">CO.PET.</option>
+                        <option value="COSECR">CO.SEC.REF</option>
+                        <option value="CRLA">CRL.A.</option>
+                        <option value="CRLCRF">CRL.C.REF.</option>
+                        <option value="CRLMP">CRL.L.P.</option>
+                        <option value="CRLMA">CRL.M.A.</option>
+                        <option value="CRLMB">CRL.M.(BAIL)</option>
+                        <option value="CRLMM">CRL.M.C.</option>
+                        <option value="CRLMC">CRL.M.(CO.)</option>
+                        <option value="CRLMI">CRL.M.I.</option>
+                        <option value="CRLO">CRL.O.</option>
+                        <option value="CRLOC">CRL.O.(CO.)</option>
+                        <option value="CRLRF">CRL.REF.</option>
+                        <option value="CRLR">CRL.REV.P.</option>
+                        <option value="CRLRMAT">CRL.REV.P.(MAT.)</option>
+                        <option value="CRLRNDPS">CRL.REV.P.(NDPS)</option>
+                        <option value="CRLRNI">CRL.REV.P.(NI)</option>
+                        <option value="CR">C.R.P.</option>
+                        <option value="CRI">CRP-IPD</option>
+                        <option value="CRULE">C.RULE</option>
+                        <option value="SC">CS(COMM)</option>
+                        <option value="SCI">CS(COMM) INFRA</option>
+                        <option value="S">CS(OS)</option>
+                        <option value="CUSAA">CUSAA</option>
+                        <option value="CUSAC">CUS.A.C.</option>
+                        <option value="CUSAR">CUS.A.R.</option>
+                        <option value="CUSTOMA">CUSTOM A.</option>
+                        <option value="DSRF">DEATH SENTENCE REF.</option>
+                        <option value="EDC">EDC</option>
+                        <option value="EDR">EDR</option>
+                        <option value="EFAC">EFA(COMM)</option>
+                        <option value="EFAOS">EFA(OS)</option>
+                        <option value="EFAOSCOMM">EFA(OS) (COMM)</option>
+                        <option value="EFI">EFA(OS)(IPD)</option>
+                        <option value="EP">EL.PET.</option>
+                        <option value="ETR">ETR</option>
+                        <option value="EA">EX.APPL.(OS)</option>
+                        <option value="EFA">EX.F.A.</option>
+                        <option value="EX">EX.P.</option>
+                        <option value="ESA">EX.S.A.</option>
+                        <option value="FAO">FAO</option>
+                        <option value="FAOC">FAO (COMM)</option>
+                        <option value="FAI">FAO-IPD</option>
+                        <option value="FAOOS">FAO(OS)</option>
+                        <option value="FAC">FAO(OS) (COMM)</option>
+                        <option value="FAOI">FAO(OS)(IPD)</option>
+                        <option value="GCAC">GCAC</option>
+                        <option value="GCAR">GCAR</option>
+                        <option value="GTA">GTA</option>
+                        <option value="GTC">GTC</option>
+                        <option value="GTR">GTR</option>
+                        <option value="IA">I.A.</option>
+                        <option value="IPA">I.P.A.</option>
+                        <option value="ITA">ITA</option>
+                        <option value="ITC">ITC</option>
+                        <option value="ITR">ITR</option>
+                        <option value="ITSA">ITSA</option>
+                        <option value="LAA">LA.APP.</option>
+                        <option value="LPA">LPA</option>
+                        <option value="MACA">MAC.APP.</option>
+                        <option value="MAT">MAT.</option>
+                        <option value="MATA">MAT.APP.</option>
+                        <option value="MATFC">MAT.APP.(F.C.)</option>
+                        <option value="MATC">MAT.CASE</option>
+                        <option value="MATRF">MAT.REF.</option>
+                        <option value="PMLA">MISC. APPEAL(PMLA)</option>
+                        <option value="OAA">O.A.</option>
+                        <option value="OA">OA</option>
+                        <option value="OCJA">OCJA</option>
+                        <option value="OMP">O.M.P.</option>
+                        <option value="OMPCOMM">O.M.P. (COMM)</option>
+                        <option value="OMP(CONT.)">OMP (CONT.)</option>
+                        <option value="OE">O.M.P. (E)</option>
+                        <option value="OMPECOMM">O.M.P. (E) (COMM.)</option>
+                        <option value="OMPEFACOMM">O.M.P.(EFA)(COMM.)</option>
+                        <option value="OF">O.M.P. (ENF.)</option>
+                        <option value="OMPENFCOMM">OMP (ENF.) (COMM.)</option>
+                        <option value="OI">O.M.P.(I)</option>
+                        <option value="OMPICOMM">O.M.P.(I) (COMM.)</option>
+                        <option value="OMPMISC">O.M.P. (MISC.)</option>
+                        <option value="OMPMISCCOMM">O.M.P.(MISC.)(COMM.)</option>
+                        <option value="OMPT">O.M.P.(T)</option>
+                        <option value="OMPTCOMM">O.M.P. (T) (COMM.)</option>
+                        <option value="OREF">O.REF.</option>
+                        <option value="RCR">RC.REV.</option>
+                        <option value="RCSA">RC.S.A.</option>
+                        <option value="RERA">RERA APPEAL</option>
+                        <option value="REVIEWPET">REVIEW PET.</option>
+                        <option value="RFA">RFA</option>
+                        <option value="RFAC">RFA(COMM)</option>
+                        <option value="RFI">RFA-IPD</option>
+                        <option value="RFAOS">RFA(OS)</option>
+                        <option value="RFC">RFA(OS)(COMM)</option>
+                        <option value="RFO">RFA(OS)(IPD)</option>
+                        <option value="RSA">RSA</option>
+                        <option value="SCA">SCA</option>
+                        <option value="SDR">SDR</option>
+                        <option value="SERTA">SERTA</option>
+                        <option value="STA">ST.APPL.</option>
+                        <option value="STR">ST.REF.</option>
+                        <option value="SRTRF">SUR.T.REF.</option>
+                        <option value="PR">TEST.CAS.</option>
+                        <option value="TRPC">TR.P.(C)</option>
+                        <option value="TPC">TR.P.(C.)</option>
+                        <option value="TRP">TR.P.(CRL.)</option>
+                        <option value="VATA">VAT APPEAL</option>
+                        <option value="CW">W.P.(C)</option>
+                        <option value="WO">W.P.(C)-IPD</option>
+                        <option value="WC">WP(C)(IPD)</option>
+                        <option value="CRLW">W.P.(CRL)</option>
+                        <option value="WTA">WTA</option>
+                        <option value="WTC">WTC</option>
+                        <option value="WTR">WTR</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="case_number" class="form-label">Case Number</label>
+                    <input type="text" name="case_number" id="case_number" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="filing_year" class="form-label">Filing Year</label>
+                    <select name="filing_year" id="filing_year" class="form-select" required>
+                        <option value="">Select Year</option>
+                        <option value="2025">2025</option>
+                        <option value="2024">2024</option>
+                        <option value="2023">2023</option>
+                        <option value="2022">2022</option>
+                        <option value="2021">2021</option>
+                        <option value="2020">2020</option>
+                        <option value="2019">2019</option>
+                        <option value="2018">2018</option>
+                        <option value="2017">2017</option>
+                        <option value="2016">2016</option>
+                        <option value="2015">2015</option>
+                        <option value="2014">2014</option>
+                        <option value="2013">2013</option>
+                        <option value="2012">2012</option>
+                        <option value="2011">2011</option>
+                        <option value="2010">2010</option>
+                        <option value="2009">2009</option>
+                        <option value="2008">2008</option>
+                        <option value="2007">2007</option>
+                        <option value="2006">2006</option>
+                        <option value="2005">2005</option>
+                        <option value="2004">2004</option>
+                        <option value="2003">2003</option>
+                        <option value="2002">2002</option>
+                        <option value="2001">2001</option>
+                        <option value="2000">2000</option>
+                        <option value="1999">1999</option>
+                        <option value="1998">1998</option>
+                        <option value="1997">1997</option>
+                        <option value="1996">1996</option>
+                        <option value="1995">1995</option>
+                        <option value="1994">1994</option>
+                        <option value="1993">1993</option>
+                        <option value="1992">1992</option>
+                        <option value="1991">1991</option>
+                        <option value="1990">1990</option>
+                        <option value="1989">1989</option>
+                        <option value="1988">1988</option>
+                        <option value="1987">1987</option>
+                        <option value="1986">1986</option>
+                        <option value="1985">1985</option>
+                        <option value="1984">1984</option>
+                        <option value="1983">1983</option>
+                        <option value="1982">1982</option>
+                        <option value="1981">1981</option>
+                        <option value="1980">1980</option>
+                        <option value="1979">1979</option>
+                        <option value="1978">1978</option>
+                        <option value="1977">1977</option>
+                        <option value="1976">1976</option>
+                        <option value="1975">1975</option>
+                        <option value="1974">1974</option>
+                        <option value="1973">1973</option>
+                        <option value="1972">1972</option>
+                        <option value="1971">1971</option>
+                        <option value="1970">1970</option>
+                        <option value="1969">1969</option>
+                        <option value="1968">1968</option>
+                        <option value="1967">1967</option>
+                        <option value="1966">1966</option>
+                        <option value="1965">1965</option>
+                        <option value="1964">1964</option>
+                        <option value="1963">1963</option>
+                        <option value="1962">1962</option>
+                        <option value="1961">1961</option>
+                        <option value="1960">1960</option>
+                        <option value="1959">1959</option>
+                        <option value="1958">1958</option>
+                        <option value="1957">1957</option>
+                        <option value="1956">1956</option>
+                        <option value="1955">1955</option>
+                        <option value="1954">1954</option>
+                        <option value="1953">1953</option>
+                        <option value="1952">1952</option>
+                        <option value="1951">1951</option>
+                    </select>
+                </div>
+
+                <div class="submit-container">
+                    <button type="submit" class="btn">Search</button>
+                </div>
+            </form>
+        </div>
+
+        {% if result %}
+            <div class="results-card">
+                {% if result.status == "success" %}
+                    <div class="results-header">
+                        <div class="results-title">Results for Case {{ result.case_type }} {{ result.case_number }}/{{ result.filing_year }}</div>
+                    </div>
+                    <div class="table-container">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    {% for col in result.records.0 %}
+                                        {% if col.text %}
+                                            <th>Column {{ forloop.counter }}</th>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for row in result.records %}
+                                    <tr>
+                                        <td>{{ forloop.counter }}</td>
+                                        {% for col in row %}
+                                            {% if col.text %}
+                                                <td>
+                                                    {{ col.text }}
+                                                    {% if col.pdf_url %}
+                                                        <br>
+                                                        <a href="{{ col.pdf_url }}" class="pdf-link" target="_blank">📥 PDF</a>
+                                                    {% endif %}
+                                                </td>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="error">
+                        Error: {{ result.error }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+</body>
+</html>
