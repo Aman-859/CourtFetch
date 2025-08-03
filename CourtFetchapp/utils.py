@@ -2,19 +2,24 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
+import tempfile
 import time
 
 def fetch_case_data(case_type, case_number, filing_year):
     try:
-        
+        temp_dir = tempfile.mkdtemp()
+
         options = Options()
-        options.add_argument("--headless=new")
+        options.add_argument('--headless')
+        options.add_argument('--no-sandbox')
+        options.add_argument('--disable-dev-shm-usage')
+        options.add_argument(f'--user-data-dir={temp_dir}')   
         driver = webdriver.Chrome(options=options)
 
        
         driver.get("https://delhihighcourt.nic.in/app/case-number")
 
-        
+      
         captcha_text = driver.find_element(By.ID, "captcha-code").text
 
         
@@ -27,9 +32,10 @@ def fetch_case_data(case_type, case_number, filing_year):
         search_btn = driver.find_element(By.ID, "search")
         driver.execute_script("arguments[0].click();", search_btn)
 
-        time.sleep(3)   
-
         
+        time.sleep(3)
+
+       
         soup = BeautifulSoup(driver.page_source, "html.parser")
         table = soup.find("table", {"id": "s_judgeTable"})
 
@@ -44,7 +50,6 @@ def fetch_case_data(case_type, case_number, filing_year):
             row_data = []
 
             for col in cols:
-                # Check for PDF link
                 link_tag = col.find("a")
                 if link_tag and ".pdf" in link_tag.get("href", ""):
                     text = col.get_text(strip=True)
