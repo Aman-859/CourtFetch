@@ -45,7 +45,7 @@ Then go to http://localhost:8000 and search for a case.
 
 ## 📸 Demo Video
 
-[Watch Demo Video](https://drive.google.com/file/d/1-demo-link-or-upload-here)
+[Watch Demo Video](https://drive.google.com/file/d/1p1ItO_PJgO79DaGD7IY3_7mrXX1CND-i/view)
 
 ## 🧪 Environment Variables
 
